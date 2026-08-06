@@ -158,7 +158,9 @@
 
     .cv-footer,
     .back-to-top,
-    .floating-controls {
+    .floating-controls,
+    .profile-dots {
+        /* Decorative, and the narrow print column has no room for them */
         display: none !important;
     }
 
@@ -265,13 +267,58 @@ a:hover {
     color: var(--link-hover) !important;
 }
 
+/* Tooltip for the portfolio-work links. CSS only: the bubble is ::after, fed by
+   the data-tooltip attribute. Shown on focus-visible as well, so it is not
+   mouse-only. Colours are the inverted text/background pair, so dark mode is
+   handled by the variables. */
+a[data-tooltip] {
+    position: relative;
+}
+
+a[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    z-index: 10;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    background-color: var(--text-primary);
+    color: var(--background);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    text-decoration: none;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    pointer-events: none;
+}
+
+a[data-tooltip]:hover::after,
+a[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    a[data-tooltip]::after {
+        transition: none;
+        transform: none;
+    }
+}
+
 /* Typography */
 h1 {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 700;
-    font-size: 42px;
-    line-height: 1.3;
-    letter-spacing: -1.05px;
+    font-size: 48px;
+    line-height: 1.25;
+    letter-spacing: -1.2px;
     color: var(--text-primary);
     text-wrap: balance;
 }
@@ -307,13 +354,15 @@ p {
 .cv-container {
     background-color: var(--background);
     min-height: 100vh;
-    padding: 64px 32px;
+    padding: 112px 32px 64px;
     display: flex;
     flex-direction: column;
     gap: 24px;
     position: relative;
-    max-width: 768px;
-    /* Reduced for single column readability */
+    max-width: 600px;
+    /* Sized for measure: 600 - 64 (this padding) - 32 (card padding) = 504px of
+       text, which is ~70 characters per line at 14px Inter — inside the 45-75
+       comfort band and under WCAG 1.4.8's 80. */
     margin: 0 auto;
     animation: fadeIn 0.8s ease-out forwards;
 }
@@ -393,12 +442,21 @@ p {
 
 /* Profile Section */
 .profile-section {
-    padding: 0 16px;
-    background-image: url('assets/profile-bg.png');
+    /* top padding gives the dot ring room above the avatar */
+    padding: 40px 16px 0;
+    /* Two signature marks flanking the centred hero: the wedge variant left,
+       the monogram right. Both sit 32px down from the section top. */
+    background-image: url('assets/profile-bg-2.png'), url('assets/profile-bg.png');
+    background-position: left top 0px, right top 0px;
+    background-size: 192px auto, 192px auto;
     background-repeat: no-repeat;
-    background-position: right top;
-    background-size: 192px auto;
-    /* reasonable size constraint */
+}
+
+/* Narrower than this the two marks start meeting behind the avatar */
+@media (max-width: 700px) {
+    .profile-section {
+        background-image: none;
+    }
 }
 
 .profile-header {
@@ -406,12 +464,117 @@ p {
     flex-direction: column;
     gap: 0;
     margin-bottom: 24px;
+    align-items: center;
+    text-align: center;
+}
+
+/* Avatar plus its ring of tool marks. Sizes itself to the avatar, so the
+   dots' 50% origin is always the avatar's centre. */
+.profile-stage {
+    position: relative;
+    margin-bottom: -8px;
+}
+
+.profile-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.dot {
+    position: absolute;
+    display: block;
+    border-radius: var(--radius-full);
+    background-color: var(--paper-background);
+    border: 1px solid var(--neutrals-200);
+    overflow: hidden;
+    animation: dot-float 5s ease-in-out infinite;
+}
+
+/* left/top place the chip; transform stays free for the float animation */
+.dot-lg {
+    width: 40px;
+    height: 40px;
+    left: calc(50% + var(--x) - 20px);
+    top: calc(50% + var(--y) - 20px);
+}
+
+.dot-sm {
+    width: 32px;
+    height: 32px;
+    left: calc(50% + var(--x) - 16px);
+    top: calc(50% + var(--y) - 16px);
+}
+
+.dot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Staggered so the cluster drifts instead of pulsing in unison */
+.dot:nth-child(1) {
+    animation-duration: 5.4s;
+    animation-delay: -0.3s;
+}
+
+.dot:nth-child(2) {
+    animation-duration: 4.2s;
+    animation-delay: -1.9s;
+}
+
+.dot:nth-child(3) {
+    animation-duration: 6.1s;
+    animation-delay: -3.1s;
+}
+
+.dot:nth-child(4) {
+    animation-duration: 4.8s;
+    animation-delay: -0.9s;
+}
+
+.dot:nth-child(5) {
+    animation-duration: 5.9s;
+    animation-delay: -2.4s;
+}
+
+.dot:nth-child(6) {
+    animation-duration: 4.5s;
+    animation-delay: -1.3s;
+}
+
+@keyframes dot-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-7px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dot {
+        animation: none;
+    }
+}
+
+/* The OpenAI mark is a black outline; flip it so it survives the dark surface */
+@media (prefers-color-scheme: dark) {
+    :root:not(.light-mode) .dot-invert img {
+        filter: invert(1);
+    }
+}
+
+:root.dark-mode .dot-invert img {
+    filter: invert(1);
 }
 
 .profile-image {
     width: 118px;
     height: 118px;
-    margin-bottom: -8px;
     position: relative;
 }
 
@@ -433,10 +596,10 @@ p {
 .subtitle {
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 500;
-    font-size: 20px;
+    font-size: 23px;
     /* 1.3 in Figma; loosened so the squiggle clears the next line */
     line-height: 1.45;
-    letter-spacing: -0.5px;
+    letter-spacing: -0.6px;
     color: var(--text-primary);
     margin-top: 0;
     text-wrap: balance;
@@ -669,6 +832,7 @@ p {
 .pill {
     background-color: var(--neutrals-100);
     padding: 6px 8px;
+    min-height: 30px;
     border-radius: var(--radius-full);
     display: flex;
     align-items: center;
@@ -691,7 +855,9 @@ p {
 
 .pill-emoji {
     font-size: 18px;
-    line-height: normal;
+    line-height: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 .pill-disabled {
@@ -866,7 +1032,7 @@ p {
 /* Responsive Design */
 @media (max-width: 1400px) {
     .cv-container {
-        padding: 64px 48px;
+        padding: 112px 48px 64px;
     }
 
     .content {
@@ -902,8 +1068,10 @@ p {
         height: 96px;
     }
 
-    .profile-section {
-        background-size: 140px auto;
+    /* Ring is measured against a 118px avatar; scale it with the 96px one.
+       Origin is the box centre, i.e. the avatar's centre. */
+    .profile-dots {
+        transform: scale(0.8);
     }
 
     .experience-header,
