@@ -714,7 +714,8 @@ p {
     white-space: nowrap;
 }
 
-.experience-header h3 a {
+.experience-header h3 a,
+.education-header h3 a {
     color: inherit;
     text-decoration: underline;
     text-decoration-skip-ink: none;
